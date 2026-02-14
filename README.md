@@ -4,12 +4,6 @@ Web application for searching jobs from Indeed, StepStone & LinkedIn with SQLite
 
 ## 🚀 Quick Start
 
-### Automatic (Windows):
-```bash
-start.bat
-```
-
-### Manual:
 ```bash
 # Install dependencies
 pip install -r requirements.txt
@@ -170,3 +164,4 @@ copy jobs_backup.db jobs.db
 ## 📄 License
 
 MIT License - Free to use and modify
+
