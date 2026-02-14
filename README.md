@@ -2,7 +2,8 @@
 
 Web application for searching jobs from Indeed, StepStone & LinkedIn with SQLite database storage.
 
-``` DEMO LINK:
+## 👉🏻 DEMO LINK:
+``` 
 https://job-parser-website-2.onrender.com
 ```
 
@@ -168,5 +169,6 @@ copy jobs_backup.db jobs.db
 ## 📄 License
 
 MIT License - Free to use and modify
+
 
 
