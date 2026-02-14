@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Parser</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        
+        .search-form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .sources {
+            margin: 20px 0;
+        }
+        
+        .sources label {
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: block;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .checkbox-item input {
+            margin: 0;
+        }
+        
+        .checkbox-item label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .search-btn {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .search-btn:hover {
+            background: #0056b3;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        
+        .job-card {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .job-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 8px;
+        }
+        
+        .job-company {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .job-details {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .job-summary {
+            margin: 10px 0;
+            color: #495057;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .job-link {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .job-link:hover {
+            background: #0056b3;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Job Parser</h1>
+            <p>Search jobs from Indeed, StepStone & XING</p>
+        </div>
+        
+        <div class="search-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input type="text" id="query" value="python developer" placeholder="e.g. python developer">
+                </div>
+                
+                <div class="form-group">
+                    <label>Location</label>
+                    <select id="location">
+                        <option value="Berlin">Berlin</option>
+                        <option value="Munich">Munich</option>
+                        <option value="Hamburg">Hamburg</option>
+                        <option value="Frankfurt">Frankfurt</option>
+                        <option value="Stuttgart">Stuttgart</option>
+                        <option value="Karlsruhe">Karlsruhe</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Min Salary (€)</label>
+                    <input type="number" id="salary" placeholder="50000">
+                </div>
+                
+                <div class="form-group">
+                    <label>Experience</label>
+                    <select id="experience">
+                        <option value="all">All Levels</option>
+                        <option value="junior">Junior</option>
+                        <option value="senior">Senior</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Pages</label>
+                    <input type="number" id="pages" value="2" min="1" max="5">
+                </div>
+            </div>
+            
+            <div class="sources">
+                <label>Sources</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="indeed" checked>
+                        <label for="indeed">Indeed.de</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="stepstone" checked>
+                        <label for="stepstone">StepStone.de</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="xing" checked>
+                        <label for="xing">XING Jobs</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="search-btn" onclick="searchJobs()">Search Jobs</button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Searching jobs...</p>
+        </div>
+        
+        <div id="results" class="results">
+            <div class="stats" id="stats"></div>
+            <div id="jobs-list"></div>
+        <div id="results" class="results">
+            <div class="stats" id="stats"></div>
+            <div id="jobs-list"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function searchJobs() {
+            const query = document.getElementById('query').value;
+            const location = document.getElementById('location').value;
+            const salary = document.getElementById('salary').value;
+            const experience = document.getElementById('experience').value;
+            const pages = parseInt(document.getElementById('pages').value) || 2;
+            
+            const sources = [];
+            if (document.getElementById('indeed').checked) sources.push('indeed');
+            if (document.getElementById('stepstone').checked) sources.push('stepstone');
+            if (document.getElementById('xing').checked) sources.push('xing');
+            
+            if (sources.length === 0) {
+                alert('Please select at least one source');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query,
+                        location,
+                        salary,
+                        experience,
+                        pages,
+                        sources
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                displayResults(data.jobs, data.stats);
+            } catch (error) {
+                console.error('Search error:', error);
+                alert('Search failed: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function displayResults(jobs, stats) {
+            const statsHtml = `
+                <div class="stat-card">
+                    <h3>${stats.total || 0}</h3>
+                    <p>Total Found</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${stats.indeed || 0}</h3>
+                    <p>Indeed</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${stats.stepstone || 0}</h3>
+                    <p>StepStone</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${stats.xing || 0}</h3>
+                    <p>XING</p>
+                </div>
+            `;
+            document.getElementById('stats').innerHTML = statsHtml;
+             
+            const jobsHtml = jobs.map(job => `
+                <div class="job-card">
+                    <div class="job-title">${job.title}</div>
+                    <div class="job-company">${job.company}</div>
+                    <div class="job-details">
+                        <span>📍 ${job.location}</span>
+                        <span>💰 ${job.salary}</span>
+                        <span>🌐 ${job.source}</span>
+                        ${job.posted_date ? `<span class="badge badge-success">${job.posted_date}</span>` : ''}
+                    </div>
+                    ${job.summary ? `<div class="job-summary">${job.summary}</div>` : ''}
+                    <a href="${job.link}" target="_blank" class="job-link">
+                        View Job ${job.link_valid === false ? '⚠️' : job.link_valid === true ? '✅' : ''}
+                    </a>
+                </div>
+            `).join('');
+            
+            document.getElementById('jobs-list').innerHTML = jobsHtml;
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
